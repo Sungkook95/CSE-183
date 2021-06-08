@@ -1,0 +1,244 @@
+[[extend 'layout.html']]
+
+<style>
+[v-cloak] {
+     display: none;
+}
+</style>
+<link rel="stylesheet" href="../static/css/mystyle.css?v=0.1">
+
+<!-- Ticker Tape Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com" rel="noopener" target="_blank"><span class="blue-text"></span></a></div>
+  <script type="application/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+  {
+    "symbols": [
+      {
+        "proName": "FOREXCOM:SPXUSD",
+        "title": "S&P 500"
+      },
+      {
+        "proName": "FOREXCOM:NSXUSD",
+        "title": "Nasdaq 100"
+      },
+      {
+        "description": "Dow Jones",
+        "proName": "FOREXCOM:DJI"
+      },
+      {
+        "description": "Russel 2000",
+        "proName": "FOREXCOM:US2000"
+      },
+      {
+        "description": "Technology 100",
+        "proName": "FOREXCOM:NSXUSD"
+      },
+      {
+        "description": "Crude Oil",
+        "proName": "FOREXCOM:WTIUSD"
+      }
+    ],
+    "showSymbolLogo": true,
+    "colorTheme": "light",
+    "isTransparent": false,
+    "displayMode": "adaptive",
+    "locale": "en"
+  }
+  </script>
+</div>
+<!-- Ticker Tape Widget END -->
+
+<div id="vue-target" class="mb-6" v-cloak>
+  <div class="center mb-5">
+    <div>
+      <a class="button is-info mr-1" href="[[=URL('portfolio', signer=url_signer)]]">
+        <span><i class="fa fa-folder-open"></i> My Portfolio</span>
+      </a>
+    </div>
+    <div>
+      <a class="button is-warning" href="[[=URL('leaderboard', signer=url_signer)]]">
+        <span><i class="fa fa-trophy"></i> Leaderboard</span>
+      </a>
+    </div>
+  </div>
+  <h1 class="title center mb-6">Welcome to Stock Kings!<i class="fa fa-line-chart mt-1 ml-2" aria-hidden="true"></i></h1>
+
+  <!-- Real-Time Chart Widget BEGIN -->
+  <div class="tradingview-widget-container mb-4">
+    <div id="tradingview_4b9eb"></div>
+    <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/symbols/NASDAQ-AAPL/" rel="noopener" target="_blank"><span class="blue-text"></span></a></div>
+    <script type="application/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="application/javascript">
+    new TradingView.widget(
+      {
+        "width": 900,
+        "height": 560,
+        "symbol": "NASDAQ:AAPL",
+        "interval": "5",
+        "timezone": "America/Los_Angeles",
+        "theme": "light",
+        "style": "2",
+        "locale": "en",
+        "toolbar_bg": "#f1f3f6",
+        "enable_publishing": false,
+        "allow_symbol_change": true,
+        "save_image": false,
+        "container_id": "tradingview_4b9eb"
+      });
+    </script>
+  </div>
+  <!-- Real-Time Chart Widget END -->
+
+  <!-- Stock Fields BEGIN -->
+  <div v-if="buy_mode || sell_mode">
+    <div class="center mt-3">
+      <div class="field is-horizontal mr-4">
+        <div class="field-label is-normal">
+          <label class="label">Ticker</label>
+        </div>
+        <div class="field-body">
+          <div class="field has-addons">
+            <p class="control">
+              <input v-model="ticker" v-on="stock_found ? { keyup: reset_fields } : {}" class="input" type="text" placeholder="AAPL" size="3"/>
+            </p>
+            <div class="control">
+              <a class="button is-info" @click="get_price">Search</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal mr-4">
+        <div class="field-label is-normal">
+          <label class="label">Quantity</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <p class="control">
+              <input v-model="quantity" v-on:keyup="update_cost()" class="input" type="text" size="6"/>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal mr-4">
+        <div class="field-label is-normal">
+          <label class="label">Price</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <p class="control has-icons-left">
+              <input v-model="price" class="input" type="text" size="6" disabled/>
+              <span class="icon is-small is-left">
+                <i class="fa fa-usd"></i>
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Cost</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <p class="control has-icons-left">
+              <input v-model="cost" class="input" type="text" size="6" disabled/>
+              <span class="icon is-small is-left">
+                <i class="fa fa-usd"></i>
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-if="stock_found" class="center">
+      <div class="field is-horizontal mr-4">
+        <div class="field-label is-normal">
+          <label class="label">Holding</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <p class="control">
+              <input v-model="holding" class="input" type="text" size="6" disabled/>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal mr-4">
+        <div class="field-label is-normal">
+          <label class="label">Average</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <p class="control has-icons-left">
+              <input v-model="average" class="input" type="text" size="6" disabled/>
+              <span class="icon is-small is-left">
+                <i class="fa fa-usd"></i>
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Balance</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <p class="control has-icons-left">
+              <input v-model="balance" class="input" type="text" size="6" disabled/>
+              <span class="icon is-small is-left">
+                <i class="fa fa-usd"></i>
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Stock Fields END -->
+
+  <!-- Buttons BEGIN -->
+  <div v-if="buy_mode" class="center">
+    <button class="button is-success mr-1" @click="buy_stock()">Buy</button>
+    <button class="button is-warning" @click="set_buy_status(false)">Cancel</button>
+  </div>
+  <div v-if="sell_mode" class="center">
+    <button class="button is-danger mr-1" @click="sell_stock()">Sell</button>
+    <button class="button is-warning" @click="set_sell_status(false)">Cancel</button>
+  </div>
+  <div v-else>
+    <div class="center">
+      <div v-if="!buy_mode && !sell_mode">
+        <a class="button is-success mr-1" @click="set_buy_status(true)">
+          <span><i class="fa fa-plus"></i> Buy Stock</span>
+        </a>
+      </div>
+      <div v-if="!buy_mode && !sell_mode">
+        <a class="button is-danger" @click="set_sell_status(true)">
+          <span><i class="fa fa-minus"></i> Sell Stock</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <!-- Buttons END -->
+
+  <!-- Messages BEGIN -->
+  <div v-if="show_success" class="center mt-2">
+    <span class="tag is-success is-light">{{success_msg}}</span>
+  </div>
+  <div v-if="show_error" class="center mt-2">
+    <span class="tag is-danger is-light">{{error_msg}}</span>
+  </div>
+  <!-- Messages END -->
+</div>
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+  let get_stock_url = "[[=XML(get_stock_url)]]";
+  let buy_stock_url = "[[=XML(buy_stock_url)]]";
+  let sell_stock_url = "[[=XML(sell_stock_url)]]";
+</script>
+<script src="js/index.js"></script>
+[[end]]

@@ -1,0 +1,91 @@
+[[extend 'layout.html']]
+
+<style>
+[v-cloak] {
+     display: none;
+}
+</style>
+<link rel="stylesheet" href="../static/css/mystyle.css?v=0.1">
+
+<!-- Ticker Tape Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com" rel="noopener" target="_blank"><span class="blue-text"></span></a></div>
+  <script type="application/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+  {
+    "symbols": [
+      {
+        "proName": "FOREXCOM:SPXUSD",
+        "title": "S&P 500"
+      },
+      {
+        "proName": "FOREXCOM:NSXUSD",
+        "title": "Nasdaq 100"
+      },
+      {
+        "description": "Dow Jones",
+        "proName": "FOREXCOM:DJI"
+      },
+      {
+        "description": "Russel 2000",
+        "proName": "FOREXCOM:US2000"
+      },
+      {
+        "description": "Technology 100",
+        "proName": "FOREXCOM:NSXUSD"
+      },
+      {
+        "description": "Crude Oil",
+        "proName": "FOREXCOM:WTIUSD"
+      }
+    ],
+    "showSymbolLogo": true,
+    "colorTheme": "light",
+    "isTransparent": false,
+    "displayMode": "adaptive",
+    "locale": "en"
+  }
+  </script>
+</div>
+<!-- Ticker Tape Widget END -->
+
+<h1 class="title center">Leaderboard<i class="fa fa-trophy mt-1 ml-2" aria-hidden="true"></i></h1>
+<div class="center mb-6">
+  <div>
+    <a class="button is-link mr-1" href="[[=URL('index', signer=url_signer)]]">
+      <span><i class="fa fa-home"></i> Homepage</span>
+    </a>
+  </div>
+  <div>
+    <a class="button is-info" href="[[=URL('portfolio', signer=url_signer)]]">
+      <span><i class="fa fa-folder-open"></i> My Portfolio</span>
+    </a>
+  </div>
+</div>
+
+<div id="vue-target" class="mb-6" v-cloak>
+  <!-- Stocks Table BEGIN -->
+  <div class="center mb-6">
+    <table class="table is-bordered is-striped is-hoverable">
+      <tr>
+        <th>User Name</th>
+        <th>Account Balance</th>
+        <th>Account Value</th>
+      </tr>
+      <tr v-for="user in users">
+        <td :class="{'is-warning': user.first}">{{user.first_name}} {{user.last_name}}</td>
+        <td :class="{'is-warning': user.first}">{{user.balance}}</td>
+        <td :class="{'is-warning': user.first}"><strong>{{user.value}}</strong></td>
+      </tr>
+    </table>
+  </div>
+  <!-- Stocks Table END -->
+</div>
+
+[[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
+<script>
+  let get_users_url = "[[=XML(get_users_url)]]";
+</script>
+<script src="js/leaderboard.js"></script>
+[[end]]
